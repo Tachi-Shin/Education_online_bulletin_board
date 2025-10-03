@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIT_2ch</title>
+    <link rel="stylesheet" href="../static/css/login.css">
+    <script src="../static/JavaScript/backgrounds.js" defer></script>
+    <link rel="icon" href="../static/image/icon.png">
+</head>
+<body>
+    <div id="particle-canvas"></div>
+    <header>
+        <h1><a href="{{ url_for('index') }}">SecProNexus</a></h1>
+    </header>
+    <main>
+        <h1>Login</h1>
+        <h4>ログインページへようこそ</h4>
+        
+        <!-- エラーメッセージの表示 -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="error-message">
+                    {% for message in messages %}
+                        <h3>{{ message }}</h3>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- フォーム -->
+        <form action="{{ url_for('login') }}" method="POST" class="login_forms">
+            <label for="user_id">UserID:</label>
+            <input type="text" id="user_id" name="user_id" required>
+            <br><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <br><br>
+            <div class="rower">
+            <input type="submit" value="Login">
+        </div>
+        </form>
+    </main>
+    <footer>
+        <p>&copy; セキプロ2023年度入学生部員. All rights reserved.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title>SecProNexus | Thread</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/thread.css') }}">
+    <script src="{{ url_for('static', filename='JavaScript/thread.js') }}" defer></script>
+    <script src="../static/JavaScript/backgrounds.js" defer></script>
+    <script>
+      // サーバから注入（JSが利用）
+      window.THREAD_ID = {{ thread_id|tojson }};
+      window.CURRENT_USER_ID = {{ current_user_id|tojson }};
+      window.IS_LOGGED_IN = {{ is_logged_in|tojson }};
+    </script>
+  </head>
+  <body>
+    <div id="particle-canvas"></div>
+    <header>
+      <h1 class="header-button"><a href="{{ url_for('index') }}">SecProNexus</a></h1>
+      <h2>Thread #{{ thread_id }}</h2>
+    </header>
+
+    <main>
+      <section id="postList" class="post-list" aria-live="polite"></section>
+
+      <nav class="toolbar">
+        <button id="olderBtn" type="button">さらに読み込む</button>
+      </nav>
+    </main>
+
+    <footer class="composer">
+      {% if is_logged_in %}
+        <form id="composerForm" enctype="multipart/form-data">
+          <div class="row">
+            <textarea id="content" name="content" placeholder="メッセージを入力…" maxlength="4000"></textarea>
+          </div>
+          <div class="row">
+            <input type="file" id="imageFile" name="image">
+            <input type="url" id="imageUrl" name="image_url" placeholder="画像URL（任意）" style="flex:1">
+            <div><button id="sendBtn" type="submit">送信</button></div>
+          </div>
+        </form>
+      {% else %}
+        <p class="muted">投稿するにはログインしてください。</p>
+      {% endif %}
+    </footer>
+  </body>
+</html>

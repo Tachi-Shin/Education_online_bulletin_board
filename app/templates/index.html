@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecProNexus | Index</title>
+    <link rel="stylesheet" href="../static/css/index.css">
+    <script src="../static/JavaScript/index.js" defer></script>
+    <script src="../static/JavaScript/backgrounds.js" defer></script>
+    <link rel="icon" href="../static/image/icon.png">
+</head>
+<div id="particle-canvas"></div>
+<body>
+    <header>
+        <h1><center><a href="{{ url_for('index') }}">SecProNexus</a></center></h1>
+    </header>
+
+    <main>
+        <!-- ログイン後は表示されない -->
+        <div class="auth-links">
+            <a href="{{ url_for('logout') }}" class="logout-button">ログアウト</a>
+            <br><br>
+        </div>
+
+        <h2>スレッドアクション</h2>
+        <select id="action_selecter" onchange="toggleRadioGroup()">
+            <option value="search">検索</option>
+            <option value="create">作成</option>
+        </select>
+        <br><br>
+
+        <div class="action" id="action_content">
+            <h3 class="text_content">スレッドの検索</h3>
+            <input type="text" id="search_input" placeholder="キーワードで検索" class="styled-input">
+            <button class="search-button" onclick="searchThread()">検索</button>
+        </div>
+        <br><br>
+
+        <h2>{{view}}</h2>
+            {%if threads%}
+                {% for thread in threads %}
+                    <article class="thread" id="trend_content">
+                        <a href="{{ url_for('thread', thread_id=thread.thread_id) }}">
+                            <div class="thread_info">
+                                <!-- メタ情報（横並び） -->
+                                <div class="thread_meta">
+                                    <p>作成者：{{ thread.creator }}</p>
+                                    <p>作成者id：{{ thread.creator_id }}</p>
+                                    <p>スレッドid：{{ thread.creator_id }}</p>
+                                    <p>作成日：{{ thread.created_at }}</p>
+                                    <p>閲覧数：{{ thread.view_count }}</p>
+                                </div>
+                                <div class="thread_hr"><hr></div>
+                                <!-- タイトルとサマリー（縦並び） -->
+                                <div class="thread_content">
+                                    <h2>{{ thread.title }}</h2>
+                                    <h3>{{ thread.summary }}</h3>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+                {% endfor %}
+            {%else%}
+                <p>表示できるスレッドはありません。</p>
+            {%endif%}
+    </main>
+
+    <footer>
+    <center><h4>&copy; セキプロ2023年度入学生部員. All rights reserved.</h4></center>
+    </footer>
+
+</body>
+
+</html>
