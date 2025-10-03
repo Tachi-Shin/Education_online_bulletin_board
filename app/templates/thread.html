@@ -6,7 +6,6 @@
     <title>SecProNexus | Thread</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/thread.css') }}">
     <script src="{{ url_for('static', filename='JavaScript/thread.js') }}" defer></script>
-    <script src="../static/JavaScript/backgrounds.js" defer></script>
     <script>
       // サーバから注入（JSが利用）
       window.THREAD_ID = {{ thread_id|tojson }};
@@ -15,7 +14,6 @@
     </script>
   </head>
   <body>
-    <div id="particle-canvas"></div>
     <header>
       <h1 class="header-button"><a href="{{ url_for('index') }}">SecProNexus</a></h1>
       <h2>Thread #{{ thread_id }}</h2>

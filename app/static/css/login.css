@@ -6,7 +6,7 @@ header {
 body {
     margin: 0;
     padding: 0;
-    background: #000000;
+    background: #777;
     display: flex;
     justify-content: center; /* 垂直方向に中央配置 */
     flex-direction: column;

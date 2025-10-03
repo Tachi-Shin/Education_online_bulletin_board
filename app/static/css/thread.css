@@ -1,4 +1,4 @@
-body { max-width: 900px; margin: 0 auto; padding: 16px; }
+body { max-width: 900px; margin: 0 auto; padding: 16px; background-color: #777; }
     header h1 { text-align: center; }
 	.header-button { color: #ddd;}
     .post-list { display:flex; flex-direction:column; gap:12px; margin:16px 0; }
