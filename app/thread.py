@@ -22,24 +22,6 @@ def thread(thread_id: int):
 		is_logged_in=is_logged_in,
 	)
 
-@app.get("/api/thread/<int:thread_id>/posts")
-def api_get_posts(thread_id: int):
-	# limit / newer_than / older_than
-	try:
-		limit = int(request.args.get("limit", 20))
-	except ValueError:
-		limit = 20
-	limit = max(1, min(limit, 100))
-
-	def _toi(s):
-		return int(s) if (s and s.isdigit()) else None
-
-	newer_than = _toi(request.args.get("newer_than"))
-	older_than = _toi(request.args.get("older_than"))
-
-	posts = fetch_thread_posts_page(thread_id, limit=limit, newer_than=newer_than, older_than=older_than)
-	return jsonify({"posts": posts})
-
 @app.post("/api/thread/<int:thread_id>/post")
 def api_create_post(thread_id: int):
 	if not has_login_cookie():
