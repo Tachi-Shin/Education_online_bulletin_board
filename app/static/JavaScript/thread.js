@@ -1,135 +1,204 @@
+// static/JavaScript/thread.js
+
 (() => {
-  const threadId = window.THREAD_ID;
-  const isLoggedIn = !!window.IS_LOGGED_IN;
+  const THREAD_ID = window.THREAD_ID;
+  const IS_LOGGED_IN = window.IS_LOGGED_IN;
+
   const postList = document.getElementById('postList');
-  const refreshBtn = document.getElementById('refreshBtn');
-  const olderBtn = document.getElementById('olderBtn');
+  const olderBtn  = document.getElementById('olderBtn');
+  const form      = document.getElementById('composerForm');
+  const sendBtn   = document.getElementById('sendBtn');
 
-  let newestPostId = null;
-  let oldestPostId = null;
-  let loading = false;
+  // クライアント側ページング
+  const PAGE_SIZE = 20;
+  let allPosts = [];     // サーバから取得した全件
+  let shown = 0;         // 画面に出している件数
 
-  function postNode(p) {
-    const el = document.createElement('article');
-    el.className = 'post';
-    el.dataset.postId = p.post_id;
-
-    const meta = document.createElement('div');
-    meta.className = 'post-meta';
-    meta.textContent = `#${p.post_id}  ${p.sender} (id:${p.sender_id})  ${p.created_at}`;
-
-    const body = document.createElement('div');
-    body.className = 'post-content';
-    body.innerText = p.content || '';
-
-    el.appendChild(meta);
-    el.appendChild(body);
-
-    if (p.content_image) {
-      const img = document.createElement('img');
-      img.loading = 'lazy';
-      img.alt = 'attached';
-      img.src = p.content_image;
-      el.appendChild(img);
-    }
-    return el;
-  }
-
-  async function fetchPosts({ newerThan=null, olderThan=null, limit=20 } = {}) {
-    const qs = new URLSearchParams({ limit: String(limit) });
-    if (newerThan) qs.set('newer_than', String(newerThan));
-    if (olderThan) qs.set('older_than', String(olderThan));
-    const res = await fetch(`/api/thread/${threadId}/posts?${qs}`, { credentials: 'same-origin' });
-    if (!res.ok) throw new Error('fetch failed');
-    const j = await res.json();
-    return j.posts || [];
-  }
-
-  async function initialLoad() {
-    if (loading) return;
-    loading = true;
-    try {
-      const posts = await fetchPosts({ limit: 30 });
-      postList.innerHTML = '';
-      posts.forEach(p => postList.appendChild(postNode(p)));
-      if (posts.length) {
-        newestPostId = posts[0].post_id;
-        oldestPostId = posts[posts.length - 1].post_id;
-      }
-    } finally { loading = false; }
-  }
-
-  async function refreshNew() {
-    if (loading) return;
-    loading = true;
-    try {
-      const posts = await fetchPosts({ newerThan: newestPostId, limit: 50 });
-      for (let i = posts.length - 1; i >= 0; i--) {
-        const p = posts[i];
-        postList.prepend(postNode(p));
-        if (!oldestPostId) oldestPostId = p.post_id;
-      }
-      if (posts.length) newestPostId = Math.max(newestPostId || 0, posts[0].post_id);
-    } finally { loading = false; }
-  }
-
-  async function loadOlder() {
-    if (loading) return;
-    loading = true;
-    try {
-      const posts = await fetchPosts({ olderThan: oldestPostId, limit: 30 });
-      posts.forEach(p => postList.appendChild(postNode(p)));
-      if (posts.length) oldestPostId = posts[posts.length - 1].post_id;
-    } finally { loading = false; }
-  }
-
-  // 投稿
-  const form = document.getElementById('composerForm');
-  if (form && isLoggedIn) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (loading) return;
-
-      const content = document.getElementById('content').value.trim();
-      const imageUrl = document.getElementById('imageUrl').value.trim();
-      const file = document.getElementById('imageFile').files[0];
-
-      if (!content && !imageUrl && !file) {
-        alert('内容または画像を指定してください。');
-        return;
-      }
-
-      const fd = new FormData();
-      fd.append('content', content);
-      if (imageUrl) fd.append('image_url', imageUrl);
-      if (file) fd.append('image', file);
-
-      loading = true;
-      try {
-        const res = await fetch(`/api/thread/${threadId}/post`, {
-          method: 'POST',
-          body: fd,
-          credentials: 'same-origin',
-        });
-        if (!res.ok) throw new Error(await res.text());
-        document.getElementById('content').value = '';
-        document.getElementById('imageUrl').value = '';
-        document.getElementById('imageFile').value = '';
-        await refreshNew();
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      } catch (err) {
-        alert('投稿に失敗しました: ' + err.message);
-      } finally {
-        loading = false;
-      }
+  // ---- 取得＆描画 ----
+  async function fetchAllPosts() {
+    const res = await fetch(`/api/thread/${THREAD_ID}/posts`);
+    if (!res.ok) throw new Error('Failed to fetch posts');
+    const data = await res.json();
+    // created_at昇順が返る想定。念のためcreated_at→post_idで安定ソート
+    allPosts = [...data].sort((a, b) => {
+      if (a.created_at < b.created_at) return -1;
+      if (a.created_at > b.created_at) return 1;
+      return (a.post_id || 0) - (b.post_id || 0);
     });
   }
 
-  // UIイベント
-  if (refreshBtn) refreshBtn.addEventListener('click', refreshNew);
-  if (olderBtn) olderBtn.addEventListener('click', loadOlder);
+  function renderNextChunk() {
+    const next = allPosts.slice(shown, shown + PAGE_SIZE);
+    next.forEach(p => postList.appendChild(renderPost(p)));
+    shown += next.length;
+    toggleOlderBtn();
+  }
 
-  // 初回・定期更新
-  initialLoad();
-  setInterval(() => { refreshNew().catch(()=>{}); }, 1000);
+  function toggleOlderBtn() {
+    if (shown >= allPosts.length) {
+      olderBtn.style.display = 'none';
+    } else {
+      olderBtn.style.display = '';
+    }
+  }
+
+  function renderPost(post) {
+    // ご指定レイアウト
+    // <article class="post">
+    //   <div class="post-header">
+    //     <span class="post-user">@{{ post.user_id }}</span>
+    //     <span class="post-timestamp">{{ post.created_at }}</span>
+    //   </div>
+    //   <div class="post-content">
+    //     <p>{{ post.content }}</p>
+    //     {% if post.file %}<img src="{{ post.file }}" alt="Attached image">{% endif %}
+    //   </div>
+    // </article>
+
+    // サーバ側db.pyのall_posts_page()は:
+    // - post.user_id = sender_id
+    // - 画像なら post.file にURL
+    // - それ以外は post.media_type / post.content_media で判定可能
+    const article = document.createElement('article');
+    article.className = 'post';
+
+    const header = document.createElement('div');
+    header.className = 'post-header';
+
+    const user = document.createElement('span');
+    user.className = 'post-user';
+    user.textContent = `@${post.user_id ?? post.sender_id ?? 'unknown'}`;
+
+    const ts = document.createElement('span');
+    ts.className = 'post-timestamp';
+    ts.textContent = post.created_at ?? '';
+
+    header.appendChild(user);
+    header.appendChild(ts);
+
+    const body = document.createElement('div');
+    body.className = 'post-content';
+
+    if (post.content) {
+      const p = document.createElement('p');
+      p.textContent = post.content;
+      body.appendChild(p);
+    }
+
+    // 互換: 画像は post.file に入っている
+    if (post.file) {
+      const img = document.createElement('img');
+      img.src = post.file;
+      img.alt = 'Attached image';
+      img.loading = 'lazy';
+      body.appendChild(img);
+    } else if (post.content_media) {
+      const mt = (post.media_type || '').toLowerCase();
+
+      if (mt.startsWith('image')) {
+        const img = document.createElement('img');
+        img.src = post.content_media;
+        img.alt = 'Attached image';
+        img.loading = 'lazy';
+        body.appendChild(img);
+      } else if (mt.startsWith('video')) {
+        const v = document.createElement('video');
+        v.controls = true;
+        v.src = post.content_media;
+        body.appendChild(v);
+      } else if (mt.startsWith('audio')) {
+        const a = document.createElement('audio');
+        a.controls = true;
+        a.src = post.content_media;
+        body.appendChild(a);
+      } else if (mt) {
+        const a = document.createElement('a');
+        a.href = post.content_media;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = `📎 ${post.original_name || 'ファイルを開く'}`;
+        body.appendChild(a);
+      }
+    }
+
+    article.appendChild(header);
+    article.appendChild(body);
+    return article;
+  }
+
+  // ---- 送信 ----
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!IS_LOGGED_IN) return;
+
+    sendBtn.disabled = true;
+
+    try {
+      const fd = new FormData(form);
+      // name属性は content / file / media_url になっている前提
+      // 必須チェック：テキストもファイルもURLも無い場合は弾く（サーバ側も弾く実装）
+      const hasContent = (fd.get('content') || '').trim().length > 0;
+      const hasFile = fd.get('file') && fd.get('file').name;
+      const hasUrl = (fd.get('media_url') || '').trim().length > 0;
+
+      if (!hasContent && !hasFile && !hasUrl) {
+        alert('内容が空です。テキスト、ファイル、またはURLのいずれかを入力してください。');
+        return;
+      }
+
+      const res = await fetch(`/api/thread/${THREAD_ID}/post`, {
+        method: 'POST',
+        body: fd,
+      });
+
+      if (!res.ok) {
+        const err = await safeJson(res);
+        throw new Error(err?.error || '投稿に失敗しました');
+      }
+
+      // 成功したら一覧を再取得して末尾に差分描画でもいいが、
+      // シンプルに全件再取得→再描画（小規模用途なら十分）
+      await fetchAllPosts();
+      postList.innerHTML = '';
+      shown = 0;
+      renderNextChunk();
+
+      // フォームリセット
+      form.reset();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || '投稿に失敗しました');
+    } finally {
+      sendBtn.disabled = false;
+    }
+  }
+
+  async function safeJson(res) {
+    try { return await res.json(); } catch { return null; }
+  }
+
+  // ---- 初期化 ----
+  async function init() {
+    try {
+      await fetchAllPosts();
+      renderNextChunk();
+    } catch (e) {
+      console.error(e);
+      postList.innerHTML = '<p class="muted">投稿の取得に失敗しました。</p>';
+      olderBtn.style.display = 'none';
+    }
+  }
+
+  // イベント
+  if (olderBtn) {
+    olderBtn.addEventListener('click', () => {
+      renderNextChunk();
+    });
+  }
+  if (form) {
+    form.addEventListener('submit', handleSubmit);
+  }
+
+  // go
+  init();
 })();

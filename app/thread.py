@@ -1,65 +1,65 @@
+# app/thread.py
 import os
 from app import app
-from datetime import datetime
-from flask import request, jsonify, render_template
-from werkzeug.utils import secure_filename
-
-from app.db import fetch_thread_posts_page, insert_post_record, ensure_dirs
+from flask import request, jsonify, render_template, redirect, url_for, abort
+from app.db import (
+    not_file_insert_post_db,
+    file_insert_post_db,
+    all_posts_page,
+    get_post_db,
+    thread_exists,
+)
 from app.cookie import has_login_cookie, get_user_id
 
-ALLOWED_IMAGE_EXT = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
-
-
-
+# スレッドページ
 @app.route("/thread/<int:thread_id>")
 def thread(thread_id: int):
-	is_logged_in = has_login_cookie()
-	current_user_id = get_user_id() if is_logged_in else None
-	return render_template(
-		"thread.html",
-		thread_id=thread_id,
-		current_user_id=current_user_id,
-		is_logged_in=is_logged_in,
-	)
+    is_logged_in = has_login_cookie()
+    current_user_id = get_user_id() if is_logged_in else None
 
+    if not is_logged_in:
+        return redirect(url_for("signup"))
+
+    if not thread_exists(thread_id):
+        abort(404)
+
+    contents = all_posts_page(thread_id)
+    return render_template(
+        "thread.html",
+        thread_id=thread_id,
+        contents=contents,
+        is_logged_in=is_logged_in,
+        current_user_id=current_user_id,
+    )
+
+# 投稿一覧API（JSON）
+@app.get("/api/thread/<int:thread_id>/posts")
+def api_get_posts(thread_id: int):
+    if not thread_exists(thread_id):
+        return jsonify({"error": "thread not found"}), 404
+    posts = get_post_db(thread_id)
+    return jsonify(posts), 200
+
+# 投稿作成API
 @app.post("/api/thread/<int:thread_id>/post")
 def api_create_post(thread_id: int):
-	if not has_login_cookie():
-		return ("Unauthorized", 401)
-	sender_id = get_user_id()
-	if not sender_id:
-		return ("Unauthorized", 401)
+    if not has_login_cookie():
+        return jsonify({"error": "unauthorized"}), 401
 
-	content = (request.form.get("content") or "").strip()
-	image_url = (request.form.get("image_url") or "").strip()
-	content_image = None
+    if not thread_exists(thread_id):
+        return jsonify({"error": "thread not found"}), 404
 
-	# URL指定
-	if image_url:
-		content_image = image_url
+    sender_id = get_user_id()
+    content = request.form.get("content", "").strip()
+    file = request.files.get("file")
+    media_url = request.form.get("media_url", "").strip()
 
-	# ファイルアップロード
-	file = request.files.get("image")
-	if file and file.filename:
-		fname = secure_filename(file.filename)
-		if not _allowed_image(fname):
-			return ("Unsupported image format", 400)
-		base, ext = os.path.splitext(fname)
-		ts = datetime.now().strftime("%Y%m%d%H%M%S%f")
-		saved = f"{base}_{sender_id}_{ts}{ext}"
-		save_dir = app.config["UPLOAD_FOLDER"]
-		os.makedirs(save_dir, exist_ok=True)
-		file.save(os.path.join(save_dir, saved))
-		content_image = f"/static/uploads/{saved}"
+    # どちらも無い場合はテキストのみ投稿（空文字OKにしない場合はチェックを）
+    if not file and not media_url:
+        if not content:
+            return jsonify({"error": "content or file/media_url required"}), 400
+        post_id = not_file_insert_post_db(thread_id, sender_id, content)
+    else:
+        post_id = file_insert_post_db(thread_id, sender_id, content, file, media_url)
 
-	if not content and not content_image:
-		return ("Empty content", 400)
-
-	pid = insert_post_record(thread_id=thread_id, sender_id=sender_id, content=content, content_image=content_image)
-	if not pid:
-		return ("Insert failed", 500)
-	return ("OK", 201)
-
-def _allowed_image(name: str) -> bool:
-    _, ext = os.path.splitext(name.lower())
-    return ext in ALLOWED_IMAGE_EXT
+    return jsonify({"ok": True, "post_id": post_id}), 201

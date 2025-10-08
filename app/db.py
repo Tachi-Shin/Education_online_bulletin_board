@@ -1,7 +1,15 @@
+# app/db.py
 import sqlite3
-from werkzeug.security import check_password_hash
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Dict
+from werkzeug.security import check_password_hash
+from werkzeug.utils import secure_filename
+from PIL import Image
+import mimetypes
+import time
+import os
+
+IMAGE_EXTS = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'}
 
 def get_db_connection():
     db_name='app\KIT2ch.db'
@@ -134,3 +142,159 @@ def create_thread(user_id, title, summary):
     finally:
         conn.close()
 
+def thread_exists(thread_id: int) -> bool:
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT 1 FROM threads WHERE thread_id = ?", (thread_id,))
+    exists = cur.fetchone() is not None
+    conn.close()
+    return exists
+
+# ======投稿保存パス=====
+def make_files_dir(thread_id: int) -> Path:
+    upload_dir = Path(f"app/static/files/{thread_id}")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    return upload_dir
+
+# ======投稿 追加（テキストのみ）=====
+def not_file_insert_post_db(thread_id: int, sender_id: int, content: str) -> int:
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            INSERT INTO posts (
+                thread_id, sender_id, content, content_media, media_type,
+                mime_type, original_name, file_size, created_at
+            )
+            VALUES (?, ?, ?, NULL, NULL, NULL, NULL, NULL, CURRENT_TIMESTAMP)
+        """, (thread_id, sender_id, content))
+        conn.commit()
+        return cur.lastrowid
+    finally:
+        conn.close()
+
+# ======投稿 追加（ファイル or 外部URL）=====
+def file_insert_post_db(thread_id, sender_id, content, file_storage, media_url) -> int:
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        content_media = None
+        media_type = None
+        mime_type = None
+        original_name = None
+        file_size = None
+
+        if file_storage and file_storage.filename:
+            upload_dir = make_files_dir(thread_id)
+            original_name = file_storage.filename
+
+            # 1) まず保存名を作って保存
+            ts = int(time.time())
+            save_name = f"{ts}_{original_name}"
+            save_path = upload_dir / save_name
+            file_storage.save(save_path)
+
+            file_size = save_path.stat().st_size
+
+            # 2) MIME 推定（ブラウザ → ファイル名 → 保存名 の順）
+            mime_type = (
+                file_storage.mimetype
+                or mimetypes.guess_type(original_name)[0]
+                or mimetypes.guess_type(save_path.name)[0]
+            )
+
+            # 3) 画像判定の多段フォールバック
+            ext = save_path.suffix.lower()
+            is_image = False
+            if mime_type and mime_type.startswith("image/"):
+                is_image = True
+            elif ext in IMAGE_EXTS:
+                is_image = True
+            else:
+                # ヘッダの魔法数で最終確認（None 以外が返れば画像）
+                try:
+                    with Image.open(save_path) as img:
+                        img.verify()  # 壊れた画像なら例外を出す
+                    is_image = True
+                    if not mime_type:
+                        mime_type = f"image/{img.format.lower()}"
+                except Exception:
+                    pass
+
+            if is_image:
+                media_type = "image"
+            elif mime_type and mime_type.startswith("video/"):
+                media_type = "video"
+            elif mime_type and mime_type.startswith("audio/"):
+                media_type = "audio"
+            else:
+                media_type = "file"
+
+            content_media = f"/static/files/{thread_id}/{save_name}"
+
+        elif media_url:
+            # 省略（既存でOK）：mime_type 推定 → media_type を image/video/audio/file のいずれかに
+            # ※必要なら ext でも image 判定を足すと精度が上がります
+            pass
+
+        # --- DB 挿入（既存のまま） ---
+        cur.execute("""
+            INSERT INTO posts (
+                thread_id, sender_id, content, content_media, media_type,
+                mime_type, original_name, file_size, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        """, (
+            thread_id, sender_id, content if content else None,
+            content_media, media_type, mime_type, original_name, file_size
+        ))
+        conn.commit()
+        return cur.lastrowid
+    finally:
+        conn.close()
+
+# ======投稿 取得（テンプレ用：画像パスを post['file'] に詰める）=====
+def all_posts_page(thread_id: int) -> List[Dict]:
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT p.post_id, p.thread_id, p.sender_id, p.content,
+                   p.content_media, p.media_type, p.mime_type,
+                   p.original_name, p.file_size, p.created_at,
+                   u.username
+            FROM posts p
+            JOIN users u ON p.sender_id = u.user_id
+            WHERE p.thread_id = ?
+            ORDER BY p.created_at ASC, p.post_id ASC
+        """, (thread_id,))
+        rows = cur.fetchall()
+
+        result = []
+        for r in rows:
+            d = dict(r)
+            # テンプレ互換：画像なら file にパス/URLを入れる
+            d["file"] = d["content_media"] if (d.get("media_type") == "image" and d.get("content_media")) else None
+            # ご指定レイアウトに合わせて名前を合わせる（post.user_id）
+            d["user_id"] = d["sender_id"]
+            result.append(d)
+        return result
+    finally:
+        conn.close()
+
+# ======投稿 取得（API用：生データ）=====
+def get_post_db(thread_id: int) -> List[Dict]:
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT p.post_id, p.thread_id, p.sender_id, p.content,
+                   p.content_media, p.media_type, p.mime_type,
+                   p.original_name, p.file_size, p.created_at
+            FROM posts p
+            WHERE p.thread_id = ?
+            ORDER BY p.created_at ASC, p.post_id ASC
+        """, (thread_id,))
+        return [dict(r) for r in cur.fetchall()]
+    finally:
+        conn.close()
