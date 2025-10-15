@@ -105,11 +105,17 @@
         const v = document.createElement('video');
         v.controls = true;
         v.src = post.content_media;
+
+        v.controlsList = 'nodownload';
+        v.disablePictureInPicture = true;
+        v.addEventListener('contextmenu', e => e.preventDefault());
+
         body.appendChild(v);
       } else if (mt.startsWith('audio')) {
         const a = document.createElement('audio');
         a.controls = true;
         a.src = post.content_media;
+        a.controlsList = 'nodownload';
         body.appendChild(a);
       } else if (mt) {
         const a = document.createElement('a');

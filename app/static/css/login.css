@@ -1,117 +1,240 @@
-header {
-    background: linear-gradient(to bottom, rgba(33, 107, 33, 0.5), rgba(255, 255, 255, 0)) !important;
-    padding: 10px 0;
-}
-
-body {
+/* 基本設定 */
+html, body {
+    height: 100%;
     margin: 0;
     padding: 0;
-    background: #777;
-    display: flex;
-    justify-content: center; /* 垂直方向に中央配置 */
-    flex-direction: column;
-    min-height: 100vh; /* 画面の高さを基準にする */
 }
 
+/* 背景および全体設定 */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #000000;
+    color: #ffffff;
+    font-family: sans-serif;
+}
+
+/* 背景パーティクル */
 #particle-canvas {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -1; /* 背景に配置 */
+    z-index: -1;
     background: #000000;
 }
 
-header, main, footer {
+/* ヘッダー */
+header {
+    background: linear-gradient(to bottom, rgba(33, 107, 33, 0.5), rgba(255, 255, 255, 0)) !important;
+    padding: 20px 0;
     position: relative;
-    z-index: 1; /* 前面に配置 */
-    background-color: transparent; /* 背景を透明にする */
+    z-index: 1;
     text-align: center;
-    padding: 10px;
-    color: #ffffff !important; /* 文字を白に強制 */
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); /* 影をつけて視認性を上げる */
 }
 
-h1, p {
-    color: #ffffff !important; /* 文字を白に強制 */
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); /* 影をつけて視認性を上げる */
+header h1 {
+    margin: 0;
+    color: #ffffff;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+header h1 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+h1, h2, p {
+    text-align: center;
+}
+
+/* メインコンテンツ */
+main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* フッター */
+footer {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(33, 107, 33, 0.5)) !important;
+    padding: 20px 0;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+}
+
+footer h4 {
+    margin: 0;
+    color: #ffffff;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* 共通スタイル */
+h1, h2, h4 {
+    color: #ffffff;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
 }
 
 a {
-    color: inherit; /* リンクの色を親要素の色と同じにする */
-    text-decoration: none; /* 下線を削除 */
+    color: inherit;
+    text-decoration: none;
 }
 
-.forgot{
-    color: red;
-}
-
-main {
-    flex-grow: 1; /* コンテンツ部分を伸ばす */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-  }
-
-footer {
-    text-align: center;
-    padding: 10px;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(33, 107, 33, 0.5)) !important;
-}
-
-#myForm input[type="submit"],
-#threadForm input[type="submit"],
-form input[type="submit"] { /* 追加: form内のボタンにも適用 */
-    background: #007AFF;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    width: 30%; /* 幅をフォームと同じに調整 */
-    margin-top: 10px; /* 上の余白を追加 */
-}
-
-#myForm input[type="submit"]:hover,
-#threadForm input[type="submit"]:hover,
-form input[type="submit"]:hover { /* 追加: hover状態も適用 */
-    background: #005BB5; /* ボタンホバー時に少し暗くなる */
-}
-
-.error-message {
-    color: #ffffff;  /* 赤色 */
-    background-color: #333;  /* 薄い赤の背景 */
-    border: 1px solid #ffffff;
-    padding: 10px;
-    margin-bottom: 20px;
-    width: 40%; /* 幅をフォームと同じに調整 */
-    margin: 0 auto;
-    border-radius: 10px;
-}
-
-h3{
-    color: #ed0707;
-}
-
-.login_forms {
-    text-align: center;
-    max-width: 400px; /* 必要に応じて最大幅を設定 */
-    width: 100%; /* 幅は100%で、最大幅を設定 */
-    border-radius: 20px;
-    border: 2px solid #ffffff;
-    background-color: #222;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.rower {
-    display: flex;
-    flex-direction: row;
-    gap: 15px;
-    justify-content: center;
+/* サインアップフォーム本体 */
+.login-container {
+    max-width: 400px;
     width: 100%;
+    padding: 40px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+    z-index: 2;
+    position: relative;
+}
+
+.login-container h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 1.8rem;
+}
+
+/* フォーム項目 */
+.login-container form {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-container label {
+    margin: 10px 0 5px;
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: #ffffff;
+}
+
+.login-container input[type="number"],
+.login-container input[type="email"],
+.login-container input[type="password"] {
+    padding: 10px;
+    border: 1px solid #00ff00;
+    border-radius: 5px;
+    background-color: transparent;
+    color: #ffffff;
+    outline: none;
+}
+
+.login-container input[type="number"]:focus,
+.login-container input[type="email"]:focus,
+.login-container input[type="password"]:focus {
+    border-color: #ffffff;
+    box-shadow: 0 0 5px #00ff00;
+}
+
+.login-container input[type="submit"] {
+    margin-top: 20px;
+    padding: 12px;
+    background-color: #007AFF;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.login-container input[type="submit"]:hover {
+    background-color: #005BB5;
+}
+
+/* 登録ボタン */
+#signup-button {
+    margin-top: 20px;
+    padding: 12px;
+    text-align: center;
+    background-color: #00ff00;
+    color: #000000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+#signup-button:hover {
+    color: #ffffff;
+    background-color: #216b21;
+}
+
+/* フラッシュメッセージ */
+.error-message {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: rgba(255, 0, 0, 0.2);
+    border: 1px solid red;
+    color: #ff8080;
+    border-radius: 5px;
+    text-align: center;
+}
+
+/* レスポンシブ対応 */
+@media (max-height: 700px) {
+    .signup-container {
+        padding: 30px;
+    }
+    
+    .signup-container h2 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
+    
+    header, footer {
+        padding: 15px 0;
+    }
+    
+    main {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .signup-container {
+        margin: 10px;
+        padding: 30px 20px;
+    }
+    
+    main {
+        padding: 10px;
+    }
+    
+    header, footer {
+        padding: 15px 0;
+    }
+}
+
+/* 非常に小さな画面の場合 */
+@media (max-height: 600px) {
+    .signup-container {
+        padding: 20px;
+    }
+    
+    .signup-container h2 {
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+    }
+    
+    .signup-container label {
+        margin: 8px 0 3px;
+    }
+    
+    .signup-container input[type="text"],
+    .signup-container input[type="email"],
+    .signup-container input[type="password"] {
+        padding: 8px;
+    }
 }

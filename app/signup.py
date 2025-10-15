@@ -1,3 +1,4 @@
+# signup.py
 from app import app
 from flask import Flask, request, redirect, url_for, flash, render_template
 from werkzeug.security import generate_password_hash
@@ -25,3 +26,4 @@ def signup():
             flash("学籍番号は数字で入力してください。", "danger")
             return redirect(url_for("signup"))
     return render_template('signup.html')
+

@@ -1,14 +1,87 @@
-body { max-width: 900px; margin: 0 auto; padding: 16px; background-color: #777; }
-    header h1 { text-align: center; }
-	.header-button { color: #ddd;}
-    .post-list { display:flex; flex-direction:column; gap:12px; margin:16px 0; }
-    .post { border:1px solid #ddd; border-radius:8px; padding:12px; background:#fff; }
-    .post-meta { font-size:.9rem; color:#555; margin-bottom:8px; display:flex; gap:12px; flex-wrap:wrap; }
-    .post-content { white-space:pre-wrap; word-break:break-word; color: #555; }
-    .post img { max-width:100%; border-radius:8px; margin-top:8px; }
-    .toolbar { display:flex; justify-content:space-between; align-items:center; margin:8px 0; }
-    .composer { position:sticky; bottom:0; background:#f8f8f8; border-top:1px solid #ddd; padding:12px; }
-    .composer form { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; }
-    .composer .row { grid-column:1 / -1; display:flex; gap:8px; align-items:center; }
-    textarea { width:100%; min-height:80px; resize:vertical; }
-    .muted { color:#777; font-size:.9rem; }
+body { max-width: 900px; margin: 0 auto; padding: 16px; }
+header h1 { text-align: center; }
+.header-button { color: #ddd;}
+.post-list { display:flex; flex-direction:column; gap:12px; margin:16px 0; }
+.post-meta { font-size:.9rem; color:#555; margin-bottom:8px; display:flex; gap:12px; flex-wrap:wrap; }
+.post-content { white-space:pre-wrap; word-break:break-word; color: #555; overflow-wrap: anywhere; }
+.post img { max-width:100%; border-radius:8px; margin-top:8px; }
+.toolbar { display:flex; justify-content:space-between; align-items:center; margin:8px 0; }
+.composer { position:fixed; bottom:0; background-color: rgba(0, 0, 0, 0.4);  border:1px solid #ddd; padding:12px; left: 50%; transform: translateX(-50%); z-index: 1000; }
+.composer form { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center;}
+.composer .row { grid-column:1 / -1; display:flex; gap:8px; align-items:center; }
+textarea { width:100%; min-height:80px; resize:vertical; border:3px solid #00ff00; }
+.muted { color:#777; font-size:.9rem; }
+h1, h4, a {color: #fff; text-decoration: none;}
+
+/* ポストは通常フローで積む＆中央に */
+.post {
+  position: static;           /* ← fixedをやめる */
+  left: auto;                 /* 念のためリセット */
+  transform: none;            /* 念のためリセット */
+  width: 100%;
+  max-width: 900px;           /* body/composerと同じ幅に揃える */
+  margin: 12px auto;          /* 中央寄せ */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+/* はみ出し防止＆比率維持（必要なら） */
+.post-content img,
+.post-content video,
+.post-content canvas,
+.post-content iframe {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 75vh;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #000;
+}
+
+/* 画面下固定のcomposerに隠れない余白を確保（好みで調整） */
+body { padding-bottom: 140px; }
+/* または最後のポストだけ余白を多めに */
+.post:last-child { margin-bottom: 160px; }
+
+#particle-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* 背景に配置 */
+    background: #000000;
+}
+
+#media_url {
+    border:3px solid #00ff00;
+}
+
+#file::file-selector-button {
+  font-weight: bold;
+  background: #00ff00;
+  color: black;
+  font-size: 14px;
+  border: 0;
+  border-radius: 10em;
+  padding: 8px 16px;
+  text-align: center;
+}
+
+#sendBtn {
+    background: #007AFF;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    text-decoration: none; /* リンクの下線を消す */
+    display: inline-block; /* インラインブロックで表示 */
+    text-align: center;
+    width: auto; /* テキストに合わせて横幅が自動調整される */
+    margin-top: 10px; /* 上の余白を追加 */
+}

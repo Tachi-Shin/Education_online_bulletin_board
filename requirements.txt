@@ -1,0 +1,7 @@
+Flask
+Flask-Mail
+Werkzeug
+python-dotenv
+Pillow
+simplejson
+requests

@@ -3,41 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KIT_2ch</title>
+    <title>SecProWeb開発学習</title>
     <link rel="stylesheet" href="../static/css/login.css">
+    <script src="{{ url_for('static', filename='JavaScript/backgrounds.js') }}" defer></script>
     <link rel="icon" href="../static/image/icon.png">
 </head>
 <body>
     <header>
         <h1><a href="{{ url_for('index') }}">SecProNexus</a></h1>
     </header>
-    <main>
-        <h1>Login</h1>
-        <h4>ログインページへようこそ</h4>
-        
-        <!-- エラーメッセージの表示 -->
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="error-message">
-                    {% for message in messages %}
-                        <h3>{{ message }}</h3>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
 
+    <h1>Login</h1>
+    <p>ログインページへようこそ</p><br>
+    
+    <main>
         <!-- フォーム -->
-        <form action="{{ url_for('login') }}" method="POST" class="login_forms">
-            <label for="user_id">UserID:</label>
-            <input type="text" id="user_id" name="user_id" required>
-            <br><br>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            <br><br>
-            <div class="rower">
-            <input type="submit" value="Login">
+        <div class="login-container">
+            <h2>ログイン</h2>
+            <form method="post">
+                <label for="user_id">学籍番号</label>
+                <input type="number" name="user_id" required>
+
+                <label for="password">パスワード</label>
+                <input type="password" name="password" required>
+
+                <a href="{{ url_for('signup') }}" id="signup-button">新規登録はこちら</a>
+
+                <input type="submit" value="ログイン">
+            </form>
+
+            <!-- エラーメッセージの表示 -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="error-message">
+                        {% for message in messages %}
+                            <h3>{{ message }}</h3>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
         </div>
-        </form>
     </main>
     <footer>
         <p>&copy; セキプロ2023年度入学生部員. All rights reserved.</p>

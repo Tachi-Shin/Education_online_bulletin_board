@@ -6,6 +6,7 @@
     <title>SecProNexus | Thread</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/thread.css') }}">
     <script src="{{ url_for('static', filename='JavaScript/thread.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='JavaScript/backgrounds.js') }}" defer></script>
     <script>
       // サーバから注入（JSが利用）
       window.THREAD_ID = {{ thread_id|tojson }};
@@ -14,6 +15,7 @@
     </script>
   </head>
   <body>
+    <div id="particle-canvas"></div>
     <header>
       <h1 class="header-button"><a href="{{ url_for('index') }}">SecProNexus</a></h1>
       <h2>Thread #{{ thread_id }}</h2>
@@ -44,4 +46,16 @@
       {% endif %}
     </footer>
   </body>
+
+  <footer>
+    <center><h4>&copy; セキプロ2023年度入学生部員. All rights reserved.</h4></center>
+  </footer>
+
+  <script>
+    document.addEventListener('contextmenu', e => {
+      if (e.target.tagName === 'VIDEO' || e.target.tagName === 'AUDIO' || e.target.tagName === 'IMG') {
+        e.preventDefault();
+      }
+    });
+  </script>
 </html>

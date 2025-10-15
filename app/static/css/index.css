@@ -32,6 +32,11 @@ header, main, footer {
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); /* 影をつけて視認性を上げる */
 }
 
+/* 追加：余白計算のズレ防止 */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 p {
     color: #ffffff !important; /* 文字を白に強制 */
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); /* 影をつけて視認性を上げる */
@@ -57,13 +62,6 @@ footer {
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(33, 107, 33, 0.5)) !important;
 }
 
-/* auth-linksクラスを右寄せ */
-.auth-links {
-    text-align: right; /* 親要素で右寄せ */
-}
-
-/* ボタンスタイル */
-/* ボタンスタイル */
 .logout-button, .search-button, .create-button {
     background: #007AFF;
     color: white;
@@ -105,11 +103,8 @@ footer {
     padding: 40px 40px 35px;
     text-align: center;
     border-radius: 20px;
-    background-color: #222;
+    background-color: rgba(0, 0, 0, 0.4);
     border-top-color: #ffffff;
-    border-bottom-color: #ffffff;
-    border-right-color: #ffffff;
-    border-left-color: #ffffff;
     border-width : 2px;
     border-style : solid;
   }
@@ -145,7 +140,8 @@ footer {
     padding: 10px;
     font-size: 16px;
     color: #fff;
-    background: #333; /* ダークテーマに調和する背景色 */
+    background-color: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
     border: 1px solid #ffffff; /* 緑のアクセント */
     border-radius: 5px; /* 角を丸める */
     outline: none;
@@ -193,7 +189,7 @@ footer {
     margin-left: 110px;
     max-width: calc(100% - 110px);
     border-radius: 20px;
-    background-color: #222;
+    background-color: rgba(0, 0, 0, 0.4);
     border: 2px solid #ffffff;
     margin-bottom: 40px;
 }
@@ -218,10 +214,11 @@ footer {
 }
 
 .thread_meta {
-    display: flex;
-    flex-direction: row; /* 横並び */
-    align-items: center;
-    gap: 15px; /* 横の間隔 */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;    /* ← 追加 */
 }
 
 .thread_meta a, .thread_meta p {
@@ -244,4 +241,38 @@ footer {
     height: 2px;
     background-color: #00ff00;
     width: 100%;
+}
+
+@media (max-width: 768px) {
+  .action,
+  .thread {
+    width: 92vw;      /* 50vw だと狭すぎる端末向け */
+    padding: 24px;
+  }
+}
+
+/* ==== layout override: 中央寄せ & 可変50%幅 ==== */
+.action,
+.thread {
+  margin-left: 0 !important;       /* 右寄せを無効化 */
+  max-width: none !important;
+  width: clamp(320px, 50vw, 960px); /* 50%幅（最小320px/最大960px） */
+  margin: 32px auto !important;     /* 画面中央へ */
+  padding: 32px;                    /* 既存デザインは維持 */
+  border-radius: 20px;
+}
+
+/* メタ情報は折返し可能に */
+.thread_meta {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* 小さな画面ではカードを広げて読みやすく */
+@media (max-width: 768px) {
+  .action,
+  .thread {
+    width: 92vw;      /* モバイルは広めに */
+    padding: 24px;
+  }
 }

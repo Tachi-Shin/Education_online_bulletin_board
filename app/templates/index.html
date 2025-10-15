@@ -4,12 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecProNexus | Index</title>
+    <title>SecProWeb開発学習</title>
     <link rel="stylesheet" href="../static/css/index.css">
+    <script src="{{ url_for('static', filename='JavaScript/backgrounds.js') }}" defer></script>
     <script src="../static/JavaScript/index.js" defer></script>
     <link rel="icon" href="../static/image/icon.png">
 </head>
 <body>
+    <div id="particle-canvas"></div>
     <header>
         <h1><center><a href="{{ url_for('index') }}">SecProNexus</a></center></h1>
     </header>
@@ -65,7 +67,7 @@
     </main>
 
     <footer>
-    <center><h4>&copy; セキプロ2023年度入学生部員. All rights reserved.</h4></center>
+        <center><h4>&copy; セキプロ2023年度入学生部員. All rights reserved.</h4></center>
     </footer>
 
 </body>

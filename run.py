@@ -1,5 +1,6 @@
 # /run.py
-from app import app  # アプリケーションのインスタンスをインポート
+# アプリケーションのインスタンス(バックエンド(__init__.py)のアプリケーションそのもの)をインポート
+from app import app
 
 # アプリケーションを起動
 if __name__ == '__main__':
