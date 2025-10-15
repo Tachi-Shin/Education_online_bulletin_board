@@ -9,14 +9,14 @@ FlaskベースのWebアプリケーションです。
 
 ### Windows
 
-```bash
+```
 python -V
 python -m venv SecProFlask
 SecProFlask\Scripts\activate
 pip install -r requirements.txt
 ```
 ### Linux / macOS
-```bash
+```
 python3 -V
 python3 -m venv SecProFlask
 source SecProFlask/bin/activate
@@ -24,14 +24,15 @@ pip install -r requirements.txt
 ```
 
 🚀 アプリの起動
-```bash
+```
 python run.py
 ```
 または（Flask CLIを使用する場合）:
-```bash
+```
 flask run
 ```
 📁 ディレクトリ構成例
+```
 SecProFlask/
 ├── app/
 │   ├── __init__.py
@@ -49,6 +50,7 @@ SecProFlask/
 ├── requirements.txt
 ├── run.py
 └── README.md
+```
 
 📦 主な依存パッケージ
 ```
@@ -72,3 +74,4 @@ app/templates/ 以下にはJinja2テンプレート（HTML）を配置します�
 
 📝 ライセンス
 © 2025 セキプロ2023年度入学生部員. All rights reserved.
+
