@@ -11,6 +11,7 @@ import os
 
 IMAGE_EXTS = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'}
 
+# DB接続
 def get_db_connection():
     db_name='app\KIT2ch.db'
     conn = sqlite3.connect(db_name)
