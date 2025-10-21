@@ -75,47 +75,63 @@ def login_page_db(user_id, password):
 #index.py
 import logging
 
-# スレッドの検索
-def search_thread(search_value=None):
+# スレッドの全数取得
+def view_thread():
     conn = get_db_connection()
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
     try:
-        if not search_value:  # Noneや空文字の場合は全件取得
-            query = """
-                SELECT t.thread_id, t.title, t.summary, t.created_at, t.view_count,
-                       u.user_id AS creator_id, u.username AS creator
-                FROM threads t
-                JOIN users u ON t.creator_id = u.user_id
-                ORDER BY t.created_at DESC
-                LIMIT 100
-            """
-            cur.execute(query)
-        else:
-            query = """
-                SELECT t.thread_id, t.title, t.summary, t.created_at, t.view_count,
-                       u.user_id AS creator_id, u.username AS creator
-                FROM threads t
-                JOIN users u ON t.creator_id = u.user_id
-                WHERE t.title LIKE ?
-                   OR t.summary LIKE ?
-                   OR u.username LIKE ?
-                   OR u.user_id LIKE ?
-                   OR t.thread_id LIKE ?
-                ORDER BY t.created_at DESC
-                LIMIT 100
-            """
-            search_pattern = f"%{search_value}%"
-            cur.execute(query, (
-                search_pattern,  # タイトル
-                search_pattern,  # サマリー
-                search_pattern,  # ユーザー名
-                search_pattern,  # ユーザーID
-                search_pattern   # スレッドID
-            ))
+        query = """
+            SELECT t.thread_id, t.title, t.summary, t.created_at, t.view_count,
+                    u.user_id AS creator_id, u.username AS creator
+            FROM threads t
+            JOIN users u ON t.creator_id = u.user_id
+            ORDER BY t.created_at DESC
+            LIMIT 100
+        """
+        cur.execute(query)
 
         threads = cur.fetchall()
+        return threads
+    except Exception as e:
+        logging.error(f"エラー: {e}")
+        return []
+    finally:
+        conn.close()
+
+#スレッドの検索
+def search_thread(search_value):
+    conn = get_db_connection()
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    print(f"検索値: {search_value}")
+
+    try:
+        query = """
+            SELECT t.thread_id, t.title, t.summary, t.created_at, t.view_count,
+                    u.user_id AS creator_id, u.username AS creator
+            FROM threads t
+            JOIN users u ON t.creator_id = u.user_id
+            WHERE t.title LIKE ?
+                OR t.summary LIKE ?
+                OR u.username LIKE ?
+                OR u.user_id LIKE ?
+                OR t.thread_id LIKE ?
+            ORDER BY t.created_at DESC
+            LIMIT 100
+        """
+        search_pattern = f"%{search_value}%"
+        cur.execute(query, (
+            search_pattern,  # タイトル
+            search_pattern,  # サマリー
+            search_pattern,  # ユーザー名
+            search_pattern,  # ユーザーID
+            search_pattern   # スレッドID
+        ))
+
+        threads = cur.fetchall()
+        print(f"検索結果数: {len(threads)}")
         return threads
     except Exception as e:
         logging.error(f"エラー: {e}")
