@@ -51,24 +51,21 @@ function createThread() {
 }
 
 function searchThread() {
-    var input_text = document.getElementById("search_input").value;
-    var data = {
-        action: "search",
-        search_value: input_text
-    };
-    fetch("/", {  
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
+  const input_text = document.getElementById("search_input").value;
+  const data = { action: "search", search_value: input_text };
+
+  fetch("/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+    .then(response => response.text())  // ← HTMLで受ける
+    .then(html => {
+      document.open();
+      document.write(html);
+      document.close();
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert("エラー: " + data.error);
-        }
-    })
-    .catch(error => console.error("Error:", error));
-    return false;
+    .catch(err => console.error("search error:", err));
+
+  return false;
 }
