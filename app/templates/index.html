@@ -40,26 +40,26 @@
         <h2>{{view}}</h2>
             {%if threads%}
                 {% for thread in threads %}
-                    <article class="thread" id="trend_content">
-                        <a href="{{ url_for('thread', thread_id=thread.thread_id) }}">
-                            <div class="thread_info">
-                                <!-- メタ情報（横並び） -->
-                                <div class="thread_meta">
-                                    <p>作成者：{{ thread.creator }}</p>
-                                    <p>作成者id：{{ thread.creator_id }}</p>
-                                    <p>スレッドid：{{ thread.creator_id }}</p>
-                                    <p>作成日：{{ thread.created_at }}</p>
-                                    <p>閲覧数：{{ thread.view_count }}</p>
+                    <a href="{{ url_for('thread', thread_id=thread.thread_id) }}">
+                        <article class="thread" id="trend_content">
+                                <div class="thread_info">
+                                    <!-- メタ情報（横並び） -->
+                                    <div class="thread_meta">
+                                        <p>作成者：{{ thread.creator }}</p>
+                                        <p>作成者id：{{ thread.creator_id }}</p>
+                                        <p>スレッドid：{{ thread.creator_id }}</p>
+                                        <p>作成日：{{ thread.created_at }}</p>
+                                        <p>閲覧数：{{ thread.view_count }}</p>
+                                    </div>
+                                    <div class="thread_hr"><hr></div>
+                                    <!-- タイトルとサマリー（縦並び） -->
+                                    <div class="thread_content">
+                                        <h2>{{ thread.title | safe }}</h2>
+                                        <h3>{{ thread.summary | safe }}</h3>
+                                    </div>
                                 </div>
-                                <div class="thread_hr"><hr></div>
-                                <!-- タイトルとサマリー（縦並び） -->
-                                <div class="thread_content">
-                                    <h2>{{ thread.title }}</h2>
-                                    <h3>{{ thread.summary }}</h3>
-                                </div>
-                            </div>
-                        </a>
-                    </article>
+                        </article>
+                    </a>
                 {% endfor %}
             {%else%}
                 <p>表示できるスレッドはありません。</p>
